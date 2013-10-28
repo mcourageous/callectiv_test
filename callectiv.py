@@ -1,26 +1,40 @@
 import requests
 import unittest
+import json
 
 class CallectivTest(unittest.TestCase):
 
+	def setUp(self):
+		self.auth_url = "http://api.callectiv.com/authentication"
+		self.auth =  {"apikey":"6zUYjnpWPzkPfLmPhwaR","secret":"29xxUQ7ySr"}
+		self.headers = {'content-type': 'application/json'}
+
+
+
+
 	def test_authentication_with_wrong_method(self):
 		""" Send an authentication request with a get method"""
-		
-		auth = {"apikey":"6zUYjnpWPzkPfLmPhwaR","secret":"29xxUQ7ySr"}
-		self.request = requests.post("http://api.dev.callectiv.com",params=auth)
-		self.assertEqual(self.request.status_code,404)
 
-	def test_authentication(self):
-		auth = {"apikey":"6zUYjnpWPzkPfLmPhwaR","secret":"29xxUQ7ySr"}
-		self.request = requests.post("http://api.dev.callectiv.com",params=auth)
+		self.request = requests.get(self.auth_url, data = json.dumps(self.auth), headers=self.headers)
+		self.assertEqual(self.request.status_code, 405)
+
+	def test_authentication_with_post_method(self):
+		self.request = requests.post(self.auth_url, data = json.dumps(self.auth), headers=self.headers)
 		self.assertEqual(self.request.status_code, 200)
+		self.assertEqual(self.request.headers["Content-Type"],"application/xml")
+		self.assertTrue(self.request.headers.get["Content-Type"] =="application/xml")
 
 
-	# def test_no_authentication(self):
-	# 	"""Send a post request without authentication """
 
-	# 	r = requests.post("http://callectiv.com/authentication")
-	# 	self.assertEqual(r.status_code, 404)
+
+
+
+
+
+	
+
+
+
 
 
 	
