@@ -56,7 +56,6 @@ class CallectivTest(unittest.TestCase):
 		self.subject = requests.get(self.connection_url,headers=headers)
 		self.assertEqual(xml.etree.ElementTree.fromstring(self.subject.content).tag,"connections")
 	
-		# self.assertTrue(ET.parse(self.subject.content).getroot()=="xml")
 
 	def test_subject_connection_with_json_accept_type(self):
 		self.connection_url = "http://api.callectiv.com/subject/12345/connections"
@@ -82,6 +81,8 @@ class CallectivTest(unittest.TestCase):
 		self.put_url = "http://api.callectiv.com/subject/12345/status/disabled"
 		headers = {"content-type":"application/json","accept":"application/json","authorization":self.token}
 		self.put = requests.put(self.put_url,headers=headers)
+		self.assertEqual(self.put.status_code, 409)
+		self.assertIsNot(self.put.status_code, 200)
 		print self.put.status_code
 
 
