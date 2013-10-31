@@ -10,22 +10,21 @@ import datetime
 
 class CallectivTest(unittest.TestCase):
 
+
 	def time(self,text):
 		date = parser.parse(text)
 		return date.isoformat()
 
 	def setUp(self):
+
 		self.auth_url = "http://api.callectiv.com/authentication"
 		self.auth =  {"apikey":"6zUYjnpWPzkPfLmPhwaR","secret":"29xxUQ7ySr"}
 		self.headers = {'content-type': 'application/json',"accept":"application/json"}
-	
 		self.access = requests.post(self.auth_url, data = json.dumps(self.auth), headers=self.headers)
-
 		self.token = json.loads((self.access.content)).get('token')
 
 	def test_authentication_with_wrong_method(self):
 		""" Send an authentication request with a get method"""
-
 		self.request = requests.get(self.auth_url, data = json.dumps(self.auth), headers=self.headers)
 		self.assertEqual(self.request.status_code, 405)
 
@@ -35,9 +34,8 @@ class CallectivTest(unittest.TestCase):
 		self.assertEqual(self.request.status_code, 200)
 		self.assertEqual(self.request.headers["Content-Type"],"application/json")
 		
-
-
 	def test_subject_details(self):
+
 		self.url = "http://api.callectiv.com/subject"
 		self.reference = "12345"
 		self.subject_body = {"reference":self.reference,
@@ -50,28 +48,29 @@ class CallectivTest(unittest.TestCase):
 		
 		header = headers.update({'accept':'application/json'})
 		self.get =requests.get("http://api.callectiv.com/subject/12345", headers=headers)
-		
 		response = json.loads(self.get.content)
 		self.assertEqual(response.get("message"), u"Callactiv Test")
 		self.assertEqual(response.get("reference"),"12345")
 		self.assertEqual(response.get("contact")["phone"], "0207508668")
+		
+	def test_subject_connections_default_accept_type(self):
 
-	def test_subject_zonnections_default_accept_type(self):
 		self.connection_url = "http://api.callectiv.com/subject/12345/connections"
 		headers = {"content-type":"application/json","authorization":self.token}
 		self.subject = requests.get(self.connection_url,headers=headers)
 		self.assertEqual(self.subject.status_code, 200)
 		self.assertEqual(xml.etree.ElementTree.fromstring(self.subject.content).tag,"connections")
-		
-	
 
 	def test_subject_connection_with_json_accept_type(self):
+
 		self.connection_url = "http://api.callectiv.com/subject/12345/connections"
 		headers = {"content-type":"application/json","accept":"application/json","authorization":self.token}
 		self.subject = requests.get(self.connection_url,headers=headers)
 		output = json.loads(self.subject.content)
-		expected_schema = {"type":"NoneType"}
-		self.assertIsNot(None,output)
+		self.assertEqual(self.subject.status_code, 200)
+		assert output is not None
+		
+		
 
 	
 
@@ -88,14 +87,17 @@ class CallectivTest(unittest.TestCase):
 		self.put_url = "http://api.callectiv.com/subject/12345/status/disabled"
 		headers = {"content-type":"application/json","accept":"application/json","authorization":self.token}
 		self.put = requests.put(self.put_url,headers=headers)
-		self.assertEqual(self.put.status_code, 409)
+		self.assertEqual(self.put.status_code, 200)
 		self.assertIsNot(self.put.status_code, 200)
 		# print self.put.status_code
 
-	# def test_delete_subject_with_reference(self):
-	# 	""" check status code"""
-	# 	pass
-
+	def test_delete_subject_with_reference(self):
+		""" check status code"""
+		delete_url = "http://api.callectiv.com/subject/12345"
+		headers = {"content-type":"application/json","accept":"application/json","authorization":self.token}
+		self.delte =requests.delete(delete_url, headers = headers)
+		self.assertEqual(self.delte.status_code, 200)
+		
 	def test_delete_subject_with_wrong_reference(self):
 		"""check status code"""
 		self.del_url = "http://api.callectiv.com/subject/2347"
@@ -105,21 +107,23 @@ class CallectivTest(unittest.TestCase):
 
 
 
-	# def test_make_connection(self):
-	# 	"""check status code"""
-	# 	self.make_connection_url = "http://api.callectiv.com/connection"
-	# 	headers = {"content-type":"application/json","authorization":self.token}
-	# 	self.make_connection = requests.post(self.make_connection_url, data= json.dumps(self.connection_request),headers =headers)
-	# 	xml_data = """<connection>
- # 				   <from>		   
- #      				  <phone>233207508668</phone>
- #       				 <message>This is VacationLets. You have a call from the homeowner of the house on Brighton beach.</message>
- #   						 </from>
- # 				   <subjectReference>12345</subjectReference>
- #   					 <startDateTime>2013-10-30T04:29:22+0100</startDateTime>
-	# 				</connection>"""
+	def test_make_connections(self):
+		connection_url = "http://api.callectiv.com/connection"
+		headers = {"content-type":"application/json","accept":"application/json","authorization":self.token}
+		tim = self.time(str(datetime.datetime.now()))
+		req_body = {
+					"to":{
+						"phone":"233207508668",
+						"message":"Hello world"
+					},
+					"subjectReference":"12345",
+					"startDateTime": tim}
+		self.make_connection = requests.post(connection_url,headers=headers,data=req_body)
+		self.assertEqual(self.make_connection.status_code, 200)
 
-	# 	print self.make_connection.status_code
+		
+
+	
 
 
 
@@ -132,8 +136,7 @@ class CallectivTest(unittest.TestCase):
 
 	# 	pass
 
-	# def get_connection_status(self):
-		pass
+	# def get_connection_status(self)
 
 
 
