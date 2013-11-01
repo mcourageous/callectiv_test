@@ -12,16 +12,32 @@ APPL_JSON = 'application/json'
 APPL_XML = 'application/xml'
 OK = 200
 REFERENCE = "12345"
+REFERENCE_1 = "67890"
 REQUEST_BODY =  {"reference":REFERENCE,
 					"contact":{"phone":"0207508668"},
-					"message":"Callactiv Test"} 
+					"message":"Callactiv Test"
+				} 
+
+REQUEST_BODY_1 =  {"reference":REFERENCE,
+					"contact":{"phone":"0207508668"},
+					"message":"Call Test"
+					} 
 
 REQUEST_BODY_XML = """ <subject>
-							<reference>12345</reference>
-							<contact>
-								<phone> 0207508668</phone>
-							</contact>
-							<message> Callactiv Test</message>
+						<reference>12345</reference>
+						<contact>
+						<phone> 0207508668</phone>
+						</contact>
+						<message> Callactiv Test</message>
+						</subject>
+					"""
+
+REQUEST_BODY_XML_1 =  """ <subject>
+						<reference>12345</reference>
+						<contact>
+						<phone> 0207508668</phone>
+						</contact>
+						<message> Call Test</message>
 						</subject>
 					"""
 
@@ -112,6 +128,13 @@ class RegisterSubjectTest(CallectivTestCase):
 		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML), headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
+	def test_post_json_with_request_body_1(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Content-Type':APPL_JSON,'Authorization':self.token}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY_1), headers=headers)
+		self.assertEqual(response.status_code, OK)
+
+
 
 
 
@@ -128,8 +151,120 @@ class GetSubjectDetailsTest(CallectivTestCase):
 		url = 'http://api.callectiv.com/subject/12345'
 		headers = {'Authorization':self.token}
 		response = requests.get(url, headers=headers)
+		root_xml = etree.fromstring(response.content)
 		self.assertEqual(response.status_code, OK)
+		self.assertEqual(root_xml.tag, 'subject')
+		self.assertIsNotNone(root_xml.find('creationDateTime'))
+		self.assertIsNotNone(root_xml.find('message'))
+
+	def test_get_json_response(self):
+		url = 'http://api.callectiv.com/subject/12345'
+		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
+		response = requests.get(url, headers=headers)
+		response_content = response.content
+		json_response = json.loads(response_content)
+		self.assertIsNotNone(json_response)
+	
+
+		self.assertIsNotNone(json_response)
+		self.assertEqual(json_response.get('message'), u'Callactiv Test')
+		self.assertEqual(json_response.get('reference'), '12345')
+		self.assertEqual(json_response.get('contact')['phone'], '0207508668')
+
+	def test_get_without_auth(self):
+		url = 'http://api.callectiv.com/subject/12345'
+		headers =  {'Accept':APPL_JSON}
+		response = requests.get(url, headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+
+	def test_get_without_subject_reference(self):
+		url = 'http://api.callectiv.com/subject/'
+		headers = {'Authorization':self.token}
+		response = requests.get(url, headers=headers)
+		self.assertEqual(response.status_code, OK)
+
+
+
+class GetConnectionsSubject(CallectivTestCase):
+	def test_get_json_response(self):
+		url = 'http://api.callectiv.com/subject/12345/connections'
+		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
+		response = requests.get(url, headers=headers)
+		content = response.content
+		json_response = json.loads(content)
+		self.assertIsNotNone(json_response)
+
+	def test_get_xml_response(self):
+		url = 'http://api.callectiv.com/subject/12345/connections'
+		headers = {'Authorization':self.token}
+		response = requests.get(url, headers=headers)
+		root_xml = etree.fromstring(response.content)
+		self.assertEqual(response.status_code, OK)
+		self.assertEqual(root_xml.tag, 'connections')
+		self.assertIsNotNone(root_xml.find('connection'))
+		self.assertIsNotNone(root_xml.find('id'))
+		self.assertIsNotNone(root_xml.find('subjectReference'))
+
+
+class ChangeSubjectStatus(CallectivTestCase):
+	def test_put_method_with_json(self):
+		url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
+		response = requests.put(url, headers=headers)
+		content = response.content
+		json_response = json.loads(content)
+		self.assertEqual(response.status_code, OK)
+		self.assertIsNotNone(json_response)
+		self.assertEqual(json_response.get('reference'),'12345')
+		self.assertEqual(json_response.get('contact')['phone'],'0207508668')
+		self.assertIsNotNone(json_response.get('message'))
+		self.assertIsNotNone(json_response.get('creationDateTime'))
+		self.assertEqual(json_response.get('status'), 'enabled')
+
+
+	def test_mehod_with_xml(self):
+		url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		headers = {'Authorization':self.token, 'Accept':APPL_XML}
+		response = requests.put(url, headers=headers)
+		root_xml =etree.fromstring(response.content)
+		self.assertEqual(response.status_code, OK)
+		self.assertIsNotNone(root_xml.find(''))
+
 		
+
+
+
+
+
+
+	
+
+
+	
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 		
