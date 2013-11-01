@@ -11,6 +11,19 @@ AUTH =  {"apikey":"6zUYjnpWPzkPfLmPhwaR", "secret":"29xxUQ7ySr"}
 APPL_JSON = 'application/json'
 APPL_XML = 'application/xml'
 OK = 200
+REFERENCE = "12345"
+REQUEST_BODY =  {"reference":REFERENCE,
+					"contact":{"phone":"0207508668"},
+					"message":"Callactiv Test"} 
+
+REQUEST_BODY_XML = """ <subject>
+							<reference>12345</reference>
+							<contact>
+								<phone> 0207508668</phone>
+							</contact>
+							<message> Callactiv Test</message>
+						</subject>
+					"""
 
 
 class AuthenticationTest(unittest.TestCase):
@@ -46,66 +59,99 @@ class AuthenticationTest(unittest.TestCase):
 		self.assertIsNotNone(root_xml.attrib.get('expiryTime', None))
 		self.assertIsNotNone(root_xml.find('token'))
 
-	def assertIsValidJSONResponse(self, respons):
+	def assertIsValidJSONResponse(self, response):
 		self.assertEqual(response.status_code, OK)
 		self.assertIsNotNone(response.json().get('token', None))
 		self.assertIsNotNone(response.json().get('@expiryTime', None))
 
 
-class CallectivTestCase(object):
+class CallectivTestCase(unittest.TestCase):
 	def setUp(self):
 		uri = 'http://api.callectiv.com/authentication'
 		headers = {'Content-Type':APPL_JSON, 'Accept':APPL_JSON}
-		response = requests.post(self.uri, data=json.dumps(AUTH), headers=self.headers)
+		response = requests.post(uri, data=json.dumps(AUTH), headers=headers)
 		self.token = json.loads(response.content).get('token')
 
 
 class RegisterSubjectTest(CallectivTestCase):
-	def test_aubject_details(self):
-
+	
+	def test_post_json_request(self):
 		url = "http://api.callectiv.com/subject"
-		reference = "12345"
-		request_body = {"reference":reference,
-					"contact":{"phone":"0207508668"},
-					"message":"Callactiv Test"} 
+		headers = {'Content-Type':APPL_JSON,'Authorization':self.token}
 
-		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
-		request = requests.post(url, data=json.dumps(request_body), headers=headers)
-		self.assertEqual(request.status_code, OK)
-		response =requests.get("http://api.callectiv.com/subject/12345", headers=headers)
-		json_response = json.loads(response.content)
-		self.assertEqual(json_response.get("message"), u"Callactiv Test")
-		self.assertEqual(json_response.get("reference"), "12345")
-		self.assertEqual(json_response.get("contact")["phone"], "0207508668")
+		response =requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
+		self.assertEqual(response.status_code, OK)
+
+	def test_post_json_requset_without_content_type(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Authorization':self.token}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
+		self.assertIsNot(response.status_code, OK)
+
+	def test_post_json_without_auth(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Content-Type':APPL_JSON}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+
+	def test_post_xml_request(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Content-Type':APPL_XML,'Authorization':self.token}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML),headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+
+	def test_post_xml_request_without_content_type(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Authorization':self.token}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML), headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+
+	def test_post_xml_without_auth(self):
+		url = "http://api.callectiv.com/subject"
+		headers = {'Content-Type':APPL_XML}
+		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML), headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+
+
+
 
 
 class GetSubjectDetailsTest(CallectivTestCase):
-	def test_aubject_details(self):
+	def test_post(self):
+		url = 'http://api.callectiv.com/subject/12345'
+		headers = {'Authorization':self.token}
+		response = requests.post(url, headers=headers)
+		self.assertNotEqual(response.status_code, OK)
+		self.assertNotEqual(response.content, None)
 
-		url = "http://api.callectiv.com/subject"
-		reference = "12345"
-		request_body = {"reference":reference,
-					"contact":{"phone":"0207508668"},
-					"message":"Callactiv Test"} 
-
-		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
-		request = requests.post(url, data=json.dumps(request_body), headers=headers)
-		self.assertEqual(request.status_code, OK)
-		response =requests.get("http://api.callectiv.com/subject/12345", headers=headers)
-		json_response = json.loads(response.content)
-		self.assertEqual(json_response.get("message"), u"Callactiv Test")
-		self.assertEqual(json_response.get("reference"), "12345")
-		self.assertEqual(json_response.get("contact")["phone"], "0207508668")
+	def test_get_default_response(self):
+		url = 'http://api.callectiv.com/subject/12345'
+		headers = {'Authorization':self.token}
+		response = requests.get(url, headers=headers)
+		self.assertEqual(response.status_code, OK)
 		
 
-class GetConnectionsForSubjectTests(CallectivTestCase):
-	def test_connections_default_accept_type(self):
 
-		url = "http://api.callectiv.com/subject/12345/connections"
-		headers = {'Content-Type':"application/xml", 'Authorization':self.token}
-		subject = requests.get(url, headers=headers)
-		self.assertEqual(subject.status_code, OK)
-		self.assertEqual(etree.fromstring(subject.content).tag, "connections")
+		
+
+		# headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
+		# request = requests.post(url, data=json.dumps(request_body), headers=headers)
+		# self.assertEqual(request.status_code, OK)
+		# response =requests.get("http://api.callectiv.com/subject/12345", headers=headers)
+		# json_response = json.loads(response.content)
+		# self.assertEqual(json_response.get("message"), u"Callactiv Test")
+		# self.assertEqual(json_response.get("reference"), "12345")
+		# self.assertEqual(json_response.get("contact")["phone"], "0207508668")
+		
+
+# class GetConnectionsForSubjectTests(CallectivTestCase):
+# 	def test_connections_default_accept_type(self):
+
+# 		url = "http://api.callectiv.com/subject/12345/connections"
+# 		headers = {'Content-Type':"application/xml", 'Authorization':self.token}
+# 		subject = requests.get(url, headers=headers)
+# 		self.assertEqual(subject.status_code, OK)
+# 		self.assertEqual(etree.fromstring(subject.content).tag, "connections")
 
 	# def test_connections_with_json_accept_type(self):
 
