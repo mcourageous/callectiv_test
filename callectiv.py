@@ -13,6 +13,7 @@ APPL_XML = 'application/xml'
 OK = 200
 REFERENCE = "12345"
 REFERENCE_1 = "67890"
+
 REQUEST_BODY =  {"reference":REFERENCE,
 				"contact":{"phone":"0207508668"},
 				"message":"Callactiv Test"
@@ -23,41 +24,64 @@ REQUEST_BODY_1 =  {"reference":REFERENCE,
 					"message":"Call Test"
 				  } 
 
-REQUEST_BODY_XML = """ <subject>
-						<reference>12345</reference>
-						<contact>
-						<phone> 0207508668</phone>
-						</contact>
-						<message> Callactiv Test</message>
-						</subject>
+REQUEST_BODY_XML = """ 
+<subject>
+<reference>12345</reference>
+<contact>
+<phone> 0207508668</phone>
+</contact>
+<message> Callactiv Test</message>
+</subject>
 					"""
 
-REQUEST_BODY_XML_1 =""" <subject>
-						<reference>12345</reference>
-						<contact>
-						<phone> 0207508668</phone>
-						</contact>
-						<message> Call Test</message>
-						</subject>
+REQUEST_BODY_XML_1 ="""
+ <subject>
+<reference>12345</reference>
+<contact>
+<phone> 0207508668</phone>
+</contact>
+<message> Call Test</message>
+</subject>
 					"""
+
+
 REQUEST_A = {
-				"to": {
-					"phone":"233207508668",
-					"message": "Please deliver the goods at the mall"
-				},
-				"subjectReference": REFERENCE,
-				"startDateTime":self.MakeConnectionTest.time(str(datetime.datetime.now()))
+"to": {
+"phone":"233207508668",
+"message": "Please deliver the goods at the mall"
+},
+"subjectReference": REFERENCE,
+"startDateTime":"2012-06-11T04:29:22+0100"
 	
 				}
-REQUEST_B = 	{
-				"from":{
-						"phone":"233207508668",
-						"message": "This is the place we call home"
-						},
-						"subjectReference":REFERENCE_1,
-						"startDateTime":self.MakeConnectionTest.time(str(datetime.datetime.now()))
+REQUEST_B ={
+"from":{
+"phone":"233207508668",
+"message": "This is the place we call home"
+},
+"subjectReference":REFERENCE_1,
+"startDateTime":"2012-06-11T04:29:22+0100"
 
-						}
+				}
+XML_REQUEST_A = """
+<connection>
+  <to>
+ <phone>233207508668</phone>
+ <message>This is JobWorld. We have the recruiter for the Python Developer job on the line.</message>
+  </to>
+  <subjectReference>12345</subjectReference>    
+ <startDateTime>2012-06-11T04:20:22+0100</startDateTime>
+</connection>
+"""
+XML_REQUEST_B =""" <connection>
+    <from>
+    <phone>233207508668</phone>
+    <message>This is VacationLets. You have a call from the homeowner of the house on Brighton beach.</message>
+    </from>
+    <subjectReference>67890</subjectReference>
+    <startDateTime>2012-06-11T04:29:22+0100</startDateTime>
+</connection>
+"""
 
 
 
@@ -220,7 +244,7 @@ class GetConnectionsSubject(CallectivTestCase):
 		root_xml = etree.fromstring(response.content)
 		self.assertEqual(response.status_code, OK)
 		self.assertEqual(root_xml.tag, 'connections')
-		self.assertIsNotNone(root_xml.find('connections'))
+		# self.assertIsNotNone(root_xml.find('connections'))
 		self.assertIsNotNone(root_xml.find('id'))
 		self.assertIsNotNone(root_xml.find('subjectReference'))
 
@@ -302,17 +326,56 @@ class DeleteSubjectTest(CallectivTestCase):
 
 class MakeConnectionTest(CallectivTestCase):
 
-	def test_connection(self):
+	def test_connection_with_request_A(self):
 		url = 'http://api.callectiv.com/connection'
 		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
-		response = requests.post(url, headers=headers, data=json.loads(REQUEST_A))
+		response = requests.post(url, headers=headers, data=json.dumps(REQUEST_A))
 		self.assertEqual(response.status_code, OK)
+
+	def test_connection_with_request_B(self):
+		url = 'http://api.callectiv.com/connection'
+		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
+		response = requests.put(url, headers=headers, data=json.dumps(REQUEST_B))
+		self.assertEqual(response.status_code, OK)
+
+	def test_connection_xml_A(self):
+		url = 'http://api.callectiv.com/connection'
+		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
+		response = requests.post(url, headers=headers, data=json.dumps(XML_REQUEST_A))
+		self.assertEqual(response.status_code, OK)
+
+	def test_connection_xml_B(self):
+		url = 'http://api.callectiv.com/connection'
+		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
+		response = requests.post(url, headers=headers,data=json.dumps(XML_REQUEST_B))
+		self.assertEqual(response.status_code, OK)
+
+class GetConnectionDetailsTest(CallectivTestCase):
+
+	def test_get(self):
+		url = 'http://api.callectiv.com/connection/{connectionId'
+		headers  = {'Authorization':self.token}
+
+
+
+
 		
 
 
-	def time(self, text):
-		date = parser.parse(text)
-		return date.isoformat()
+
+
+
+
+
+
+def time(self, text):
+	date = parser.parse(text)
+	return date.isoformat()
+
+
+
+		
+
 
 
 if __name__ == "__main__":
