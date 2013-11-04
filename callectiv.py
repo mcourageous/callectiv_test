@@ -63,25 +63,6 @@ REQUEST_B ={
 "startDateTime":"2012-06-11T04:29:22+0100"
 
 				}
-XML_REQUEST_A = """
-<connection>
-  <to>
- <phone>233207508668</phone>
- <message>This is JobWorld. We have the recruiter for the Python Developer job on the line.</message>
-  </to>
-  <subjectReference>12345</subjectReference>    
- <startDateTime>2012-06-11T04:20:22+0100</startDateTime>
-</connection>
-"""
-XML_REQUEST_B =""" <connection>
-    <from>
-    <phone>233207508668</phone>
-    <message>This is VacationLets. You have a call from the homeowner of the house on Brighton beach.</message>
-    </from>
-    <subjectReference>67890</subjectReference>
-    <startDateTime>2012-06-11T04:29:22+0100</startDateTime>
-</connection>
-"""
 
 
 
@@ -326,6 +307,7 @@ class DeleteSubjectTest(CallectivTestCase):
 
 class MakeConnectionTest(CallectivTestCase):
 
+
 	def test_connection_with_request_A(self):
 		url = 'http://api.callectiv.com/connection'
 		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
@@ -335,26 +317,66 @@ class MakeConnectionTest(CallectivTestCase):
 	def test_connection_with_request_B(self):
 		url = 'http://api.callectiv.com/connection'
 		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
-		response = requests.put(url, headers=headers, data=json.dumps(REQUEST_B))
+		response = requests.post(url, headers=headers, data=json.dumps(REQUEST_B))
 		self.assertEqual(response.status_code, OK)
 
 	def test_connection_xml_A(self):
 		url = 'http://api.callectiv.com/connection'
 		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
-		response = requests.post(url, headers=headers, data=json.dumps(XML_REQUEST_A))
+		REQUEST_A = """
+		<connection>
+  		<to>
+ 		<phone>233207508668</phone>
+ 		<message>This is JobWorld. We have the recruiter for the Python Developer job on the line.</message>
+  		</to>
+  		<subjectReference>12345</subjectReference>    
+ 		<startDateTime>2012-06-11T04:20:22+0100</startDateTime>
+		</connection>
+		"""
+		response = requests.post(url, headers=headers, data=REQUEST_A)
 		self.assertEqual(response.status_code, OK)
 
 	def test_connection_xml_B(self):
 		url = 'http://api.callectiv.com/connection'
 		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
-		response = requests.post(url, headers=headers,data=json.dumps(XML_REQUEST_B))
+		REQUEST_B =""" <connection>
+   		 <from>
+    	<phone>233243638773</phone>
+    	<message>This is VacationLets. You have a call from the homeowner of the house on Brighton beach.</message>
+   		 </from>
+    	<subjectReference>67890</subjectReference>
+   		<startDateTime>2012-06-11T04:29:22+0100</startDateTime>
+		</connection>
+		"""
+		response = requests.post(url, headers=headers,data=REQUEST_B)
 		self.assertEqual(response.status_code, OK)
 
 class GetConnectionDetailsTest(CallectivTestCase):
 
 	def test_get(self):
+		""" Connection details test cannot be completed because 
+		it needs an id from GetConnectionsForSubject which returns None
+		"""
 		url = 'http://api.callectiv.com/connection/{connectionId'
 		headers  = {'Authorization':self.token}
+
+class GetConnectionStatus(CallectivTestCase):
+	""" Get Connection Details requires an id parameter from GetConnectionsSubject
+	which returns a None type
+	"""
+
+	def test_get(self):
+		pass
+
+class CancelConnection(CallectivTestCase):
+	""" Cancel Connection requires an id parameter from GetConnectionsSubject.
+	GetConnectionsForSubject returns None type"""
+
+	
+
+
+
+
 
 
 
