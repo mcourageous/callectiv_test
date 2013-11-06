@@ -1,9 +1,9 @@
 import requests
 import unittest
+from requests_runscope import RunscopeAdapter
 import json
 from xml.etree import ElementTree as etree 
 import StringIO
-import validictory
 import dateutil.parser as parser
 import datetime
 
@@ -14,61 +14,12 @@ OK = 200
 REFERENCE = "12345"
 REFERENCE_1 = "67890"
 
-REQUEST_BODY =  {"reference":REFERENCE,
-				"contact":{"phone":"0207508668"},
-				"message":"Callactiv Test"
-				} 
-
-REQUEST_BODY_1 =  {"reference":REFERENCE,
-					"contact":{"phone":"0207508668"},
-					"message":"Call Test"
-				  } 
-
-REQUEST_BODY_XML = """ 
-<subject>
-<reference>12345</reference>
-<contact>
-<phone> 0207508668</phone>
-</contact>
-<message> Callactiv Test</message>
-</subject>
-					"""
-
-REQUEST_BODY_XML_1 ="""
- <subject>
-<reference>12345</reference>
-<contact>
-<phone> 0207508668</phone>
-</contact>
-<message> Call Test</message>
-</subject>
-					"""
-
-
-REQUEST_A = {
-"to": {
-"phone":"233207508668",
-"message": "Please deliver the goods at the mall"
-},
-"subjectReference": REFERENCE,
-"startDateTime":"2012-06-11T04:29:22+0100"
-	
-				}
-REQUEST_B ={
-"from":{
-"phone":"233207508668",
-"message": "This is the place we call home"
-},
-"subjectReference":REFERENCE_1,
-"startDateTime":"2012-06-11T04:29:22+0100"
-
-				}
-
-
-
 class AuthenticationTest(unittest.TestCase):
 	def setUp(self):
-		self.uri = "http://api.callectiv.com/authentication"
+		# self.uri = "http://api.callectiv.com/authentication"
+		self.uri = "http://api-callectiv-com-u453h6ad29k7.runscope.net/authentication"
+
+
 
 	def test_get(self):
 		""" Send an authentication request with a GET method"""
@@ -107,8 +58,10 @@ class AuthenticationTest(unittest.TestCase):
 
 class CallectivTestCase(unittest.TestCase):
 	def setUp(self):
-		uri = 'http://api.callectiv.com/authentication'
+		# uri = 'http://api.callectiv.com/authentication'
 		headers = {'Content-Type':APPL_JSON, 'Accept':APPL_JSON}
+
+		uri = "http://api-callectiv-com-u453h6ad29k7.runscope.net/authentication"
 		response = requests.post(uri, data=json.dumps(AUTH), headers=headers)
 		self.token = json.loads(response.content).get('token')
 
@@ -116,45 +69,94 @@ class CallectivTestCase(unittest.TestCase):
 class RegisterSubjectTest(CallectivTestCase):
 	
 	def test_post_json_request(self):
-		url = "http://api.callectiv.com/subject"
-		headers = {'Content-Type':APPL_JSON,'Authorization':self.token}
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
+		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
+		REQUEST_BODY =  {"reference":REFERENCE,
+				"contact":{"phone":"0207508668"},
+				"message":"Callactiv Test"
+				} 
 
 		response =requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
 		self.assertEqual(response.status_code, OK)
 
 	def test_post_json_requset_without_content_type(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Authorization':self.token}
+		REQUEST_BODY =  {"reference":REFERENCE,
+				"contact":{"phone":"0207508668"},
+				"message":"Callactiv Test"
+				} 
 		response = requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
 		self.assertIsNot(response.status_code, OK)
 
 	def test_post_json_without_auth(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Content-Type':APPL_JSON}
+		REQUEST_BODY =  {"reference":REFERENCE,
+				"contact":{"phone":"0207508668"},
+				"message":"Callactiv Test"
+				} 
 		response = requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_post_xml_request(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Content-Type':APPL_XML,'Authorization':self.token}
-		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML),headers=headers)
-		self.assertNotEqual(response.status_code, OK)
+		REQUEST_BODY_XML = """ 
+		<subject>
+		<reference>12345</reference>
+		<contact>
+		<phone> 0207508668</phone>
+		</contact>
+		<message> Callactiv Test</message>
+		</subject>	"""
+		response = requests.post(url, data=REQUEST_BODY_XML, headers=headers)
+		self.assertEqual(response.status_code, OK)
 
 	def test_post_xml_request_without_content_type(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Authorization':self.token}
-		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML), headers=headers)
+		REQUEST_BODY_XML = """ 
+		<subject>
+		<reference>12345</reference>
+		<contact>
+		<phone> 0207508668</phone>
+		</contact>
+		<message> Callactiv Test</message>
+		</subject>	"""
+
+		response = requests.post(url, data=REQUEST_BODY_XML, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_post_xml_without_auth(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Content-Type':APPL_XML}
+		REQUEST_BODY_XML = """ 
+		<subject>
+		<reference>12345</reference>
+		<contact>
+		<phone> 0207508668</phone>
+		</contact>
+		<message> Callactiv Test</message>
+		</subject>	
+			"""
 		response = requests.post(url, data=json.dumps(REQUEST_BODY_XML), headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_post_json_with_request_body_1(self):
-		url = "http://api.callectiv.com/subject"
+		# url = "http://api.callectiv.com/subject"
+		url = "http://api-callectiv-com-u453h6ad29k7.runscope.net/subject"
 		headers = {'Content-Type':APPL_JSON,'Authorization':self.token}
+		REQUEST_BODY_1 =  {"reference":REFERENCE,
+					"contact":{"phone":"0207508668"},
+					"message":"Call Test"
+				  } 
 		response = requests.post(url, data=json.dumps(REQUEST_BODY_1), headers=headers)
 		self.assertEqual(response.status_code, OK)
 
@@ -165,14 +167,16 @@ class RegisterSubjectTest(CallectivTestCase):
 
 class GetSubjectDetailsTest(CallectivTestCase):
 	def test_post(self):
-		url = 'http://api.callectiv.com/subject/12345'
+		# url = 'http://api.callectiv.com/subject/12345'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345'
 		headers = {'Authorization':self.token}
 		response = requests.post(url, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 		self.assertNotEqual(response.content, None)
 
 	def test_get_default_response(self):
-		url = 'http://api.callectiv.com/subject/12345'
+		# url = 'http://api.callectiv.com/subject/12345'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345'
 		headers = {'Authorization':self.token}
 		response = requests.get(url, headers=headers)
 		root_xml = etree.fromstring(response.content)
@@ -182,27 +186,28 @@ class GetSubjectDetailsTest(CallectivTestCase):
 		self.assertIsNotNone(root_xml.find('message'))
 
 	def test_get_json_response(self):
-		url = 'http://api.callectiv.com/subject/12345'
+		# url = 'http://api.callectiv.com/subject/12345'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345'
 		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
 		response = requests.get(url, headers=headers)
 		response_content = response.content
 		json_response = json.loads(response_content)
 		self.assertIsNotNone(json_response)
-	
-
 		self.assertIsNotNone(json_response)
 		self.assertEqual(json_response.get('message'), u'Callactiv Test')
 		self.assertEqual(json_response.get('reference'), '12345')
 		self.assertEqual(json_response.get('contact')['phone'], '0207508668')
 
 	def test_get_without_auth(self):
-		url = 'http://api.callectiv.com/subject/12345'
+		# url = 'http://api.callectiv.com/subject/12345'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345'
 		headers =  {'Accept':APPL_JSON}
 		response = requests.get(url, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_get_without_subject_reference(self):
-		url = 'http://api.callectiv.com/subject/'
+		# url = 'http://api.callectiv.com/subject/'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject'
 		headers = {'Authorization':self.token}
 		response = requests.get(url, headers=headers)
 		self.assertEqual(response.status_code, OK)
@@ -211,7 +216,8 @@ class GetSubjectDetailsTest(CallectivTestCase):
 
 class GetConnectionsSubject(CallectivTestCase):
 	def test_get_json_response(self):
-		url = 'http://api.callectiv.com/subject/12345/connections'
+		# url = 'http://api.callectiv.com/subject/12345/connections'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/connections'
 		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
 		response = requests.get(url, headers=headers)
 		content = response.content
@@ -219,7 +225,8 @@ class GetConnectionsSubject(CallectivTestCase):
 		self.assertIsNotNone(json_response)
 
 	def test_get_xml_response(self):
-		url = 'http://api.callectiv.com/subject/12345/connections'
+		# url = 'http://api.callectiv.com/subject/12345/connections'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/connections'
 		headers = {'Authorization':self.token}
 		response = requests.get(url, headers=headers)
 		root_xml = etree.fromstring(response.content)
@@ -232,7 +239,8 @@ class GetConnectionsSubject(CallectivTestCase):
 
 class ChangeSubjectStatus(CallectivTestCase):
 	def test_put_method_with_json(self):
-		url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		# url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/enabled'
 		headers = {'Authorization':self.token, 'Accept':APPL_JSON}
 		response = requests.put(url, headers=headers)
 		content = response.content
@@ -247,7 +255,8 @@ class ChangeSubjectStatus(CallectivTestCase):
 
 
 	def test_mehod_with_xml(self):
-		url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		# url = 'http://api.callectiv.com/subject/12345/status/enabled'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/enabled'
 		headers = {'Authorization':self.token, 'Accept':APPL_XML}
 		response = requests.put(url, headers=headers)
 		root_xml =etree.fromstring(response.content)
@@ -258,19 +267,22 @@ class ChangeSubjectStatus(CallectivTestCase):
 		self.assertIsNotNone(root_xml.find('creationDateTime'))
 
 	def test_put_method_with_disabled_status(self):
-		url =  'http://api.callectiv.com/subject/12345/status/disabled'
+		# url =  'http://api.callectiv.com/subject/12345/status/disabled'
+		url =  'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/disabled'
 		headers =  {'Authorization':self.token, 'Accept':APPL_JSON}
 		response = requests.put(url, headers=headers)
 		self.assertEqual(response.status_code, OK)
 
 	def test_put_without_auth(self):
-		url = 'http://api.callectiv.com/subject/12345/status/disabled'
+		# url = 'http://api.callectiv.com/subject/12345/status/disabled'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/disabled'
 		headers = {'Accept':APPL_JSON}
 		response = requests.put(url,headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_put_with_disabled_status(self):
-		url = url = 'http://api.callectiv.com/subject/12345/status/disabled'
+		# url = 'http://api.callectiv.com/subject/12345/status/disabled'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/disabled'
 		headers =  {'Authorization':self.token, 'Accept':APPL_JSON}
 		response = requests.put(url, headers=headers)
 		content = response.content
@@ -282,24 +294,28 @@ class ChangeSubjectStatus(CallectivTestCase):
 class DeleteSubjectTest(CallectivTestCase):
 
 	def test_delete_with_wrong_reference(self):
-		url = 'http://api.callectiv.com/subject/000000'
+		# url = 'http://api.callectiv.com/subject/000000'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/000000'
 		headers = {'Authorization':self.token}
 		response = requests.delete(url, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_delete_with_reference(self):
-		url = 'http://api.callectiv.com/subject/12345'
+		# url = 'http://api.callectiv.com/subject/12345'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345'
 		headers = {'Authorization':self.token}	
 		response = requests.delete(url, headers=headers)
 		self.assertEqual(response.status_code, OK)
 
 	def test_delete_without_auth(self):
-		url = 'http://api.callectiv.com/subject/1234'
+		# url = 'http://api.callectiv.com/subject/1234'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/1234'
 		response = requests.delete(url)
 		self.assertNotEqual(response.status_code, OK)
 
 	def test_delete_without_subject(self):
-		url =  'http://api.callectiv.com/subject/1234'
+		# url =  'http://api.callectiv.com/subject/1234'
+		url =  'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/1234'
 		headers =  {'Authorization':self.token}	
 		response = requests.delete(url, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
@@ -309,19 +325,39 @@ class MakeConnectionTest(CallectivTestCase):
 
 
 	def test_connection_with_request_A(self):
-		url = 'http://api.callectiv.com/connection'
+		# url = 'http://api.callectiv.com/connection'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/connection'
 		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
+		REQUEST_A = {
+		"to": {
+		"phone":"233207508668",
+		"message": "Please deliver the goods at the mall"
+		},
+		"subjectReference": REFERENCE,
+		"startDateTime":"2012-06-11T04:29:22+0100"
+	
+		}
 		response = requests.post(url, headers=headers, data=json.dumps(REQUEST_A))
 		self.assertEqual(response.status_code, OK)
 
 	def test_connection_with_request_B(self):
-		url = 'http://api.callectiv.com/connection'
+		# url = 'http://api.callectiv.com/connection'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/connection'
 		headers = {'Content-Type':APPL_JSON, 'Authorization':self.token}
+		REQUEST_B ={
+		"from":{
+		"phone":"233207508668",
+		"message": "This is the place we call home"
+		},
+		"subjectReference":REFERENCE_1,
+		"startDateTime":"2012-06-11T04:29:22+0100"
+		}
 		response = requests.post(url, headers=headers, data=json.dumps(REQUEST_B))
 		self.assertEqual(response.status_code, OK)
 
 	def test_connection_xml_A(self):
-		url = 'http://api.callectiv.com/connection'
+		# url = 'http://api.callectiv.com/connection'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/connection'
 		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
 		REQUEST_A = """
 		<connection>
@@ -337,7 +373,8 @@ class MakeConnectionTest(CallectivTestCase):
 		self.assertEqual(response.status_code, OK)
 
 	def test_connection_xml_B(self):
-		url = 'http://api.callectiv.com/connection'
+		# url = 'http://api.callectiv.com/connection'
+		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/connection'
 		headers = {'Content-Type':APPL_XML, 'Authorization':self.token}
 		REQUEST_B =""" <connection>
    		 <from>
@@ -359,6 +396,11 @@ class GetConnectionDetailsTest(CallectivTestCase):
 		"""
 		url = 'http://api.callectiv.com/connection/{connectionId'
 		headers  = {'Authorization':self.token}
+		response = requests.get(url,headers=headers)
+
+	def test_get_without_auth(self):
+		pass
+		
 
 class GetConnectionStatus(CallectivTestCase):
 	""" Get Connection Details requires an id parameter from GetConnectionsSubject
@@ -366,27 +408,15 @@ class GetConnectionStatus(CallectivTestCase):
 	"""
 
 	def test_get(self):
-		pass
-
-class CancelConnection(CallectivTestCase):
-	""" Cancel Connection requires an id parameter from GetConnectionsSubject.
-	GetConnectionsForSubject returns None type"""
-
-	
-
-
-
-
-
-
-
+		url = url = 'http://api.callectiv.com/connection/{connectionId'
+		response = requests.get(url)
 
 		
 
-
-
-
-
+class CancelConnection(CallectivTestCase):
+	""" Cancel Connection requires an id parameter from GetConnectionsSubject.
+	GetConnectionsForSubject returns None type
+	"""
 
 
 
@@ -396,7 +426,7 @@ def time(self, text):
 
 
 
-		
+
 
 
 
