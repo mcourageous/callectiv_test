@@ -7,7 +7,7 @@ import StringIO
 import dateutil.parser as parser
 import datetime
 
-AUTH =  {"apikey":"6zUYjnpWPzkPfLmPhwaR", "secret":"29xxUQ7ySr"}
+AUTH =  {"apikey":"xxxxxxxxx", "secret":"xxxxxxxxxxx"}
 APPL_JSON = 'application/json'
 APPL_XML = 'application/xml'
 OK = 200
@@ -59,9 +59,8 @@ class AuthenticationTest(unittest.TestCase):
 class CallectivTestCase(unittest.TestCase):
 	def setUp(self):
 		# uri = 'http://api.callectiv.com/authentication'
-		headers = {'Content-Type':APPL_JSON, 'Accept':APPL_JSON}
-
 		uri = "http://api-callectiv-com-u453h6ad29k7.runscope.net/authentication"
+		headers = {'Content-Type':APPL_JSON, 'Accept':APPL_JSON}
 		response = requests.post(uri, data=json.dumps(AUTH), headers=headers)
 		self.token = json.loads(response.content).get('token')
 
@@ -76,7 +75,6 @@ class RegisterSubjectTest(CallectivTestCase):
 				"contact":{"phone":"0207508668"},
 				"message":"Callactiv Test"
 				} 
-
 		response =requests.post(url, data=json.dumps(REQUEST_BODY), headers=headers)
 		self.assertEqual(response.status_code, OK)
 
@@ -129,7 +127,6 @@ class RegisterSubjectTest(CallectivTestCase):
 		</contact>
 		<message> Callactiv Test</message>
 		</subject>	"""
-
 		response = requests.post(url, data=REQUEST_BODY_XML, headers=headers)
 		self.assertNotEqual(response.status_code, OK)
 
@@ -159,10 +156,6 @@ class RegisterSubjectTest(CallectivTestCase):
 				  } 
 		response = requests.post(url, data=json.dumps(REQUEST_BODY_1), headers=headers)
 		self.assertEqual(response.status_code, OK)
-
-
-
-
 
 
 class GetSubjectDetailsTest(CallectivTestCase):
@@ -213,7 +206,6 @@ class GetSubjectDetailsTest(CallectivTestCase):
 		self.assertEqual(response.status_code, OK)
 
 
-
 class GetConnectionsSubject(CallectivTestCase):
 	def test_get_json_response(self):
 		# url = 'http://api.callectiv.com/subject/12345/connections'
@@ -253,7 +245,6 @@ class ChangeSubjectStatus(CallectivTestCase):
 		self.assertIsNotNone(json_response.get('creationDateTime'))
 		self.assertEqual(json_response.get('status'), 'enabled')
 
-
 	def test_mehod_with_xml(self):
 		# url = 'http://api.callectiv.com/subject/12345/status/enabled'
 		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/12345/status/enabled'
@@ -292,7 +283,6 @@ class ChangeSubjectStatus(CallectivTestCase):
 
 
 class DeleteSubjectTest(CallectivTestCase):
-
 	def test_delete_with_wrong_reference(self):
 		# url = 'http://api.callectiv.com/subject/000000'
 		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/subject/000000'
@@ -322,8 +312,6 @@ class DeleteSubjectTest(CallectivTestCase):
 
 
 class MakeConnectionTest(CallectivTestCase):
-
-
 	def test_connection_with_request_A(self):
 		# url = 'http://api.callectiv.com/connection'
 		url = 'http://api-callectiv-com-u453h6ad29k7.runscope.net/connection'
